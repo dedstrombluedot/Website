@@ -172,20 +172,31 @@ function initContactForm() {
   const form = document.getElementById('contact-form');
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
     const original = btn.textContent;
-
-    btn.textContent = 'Message Sent!';
-    btn.style.background = 'var(--color-blue-glow)';
     btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      const res = await fetch(form.action.replace('formsubmit.co/', 'formsubmit.co/ajax/'), {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form),
+      });
+      if (!res.ok) throw new Error();
+      btn.textContent = 'Message Sent!';
+      btn.style.background = 'var(--color-blue-glow)';
+      form.reset();
+    } catch {
+      btn.textContent = 'Something went wrong. Please email us directly.';
+    }
 
     setTimeout(() => {
       btn.textContent = original;
       btn.style.background = '';
       btn.disabled = false;
-      form.reset();
     }, 3000);
   });
 }
